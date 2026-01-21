@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>أوروم شات</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f0f0f0; margin:0; padding:0; }
+.container { max-width: 500px; margin: auto; padding: 20px; background: #fff; margin-top:50px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
+input, button { width: 100%; padding:10px; margin:5px 0; border-radius:5px; border:1px solid #ccc; }
+#chat { border:1px solid #ccc; height:400px; overflow-y:scroll; padding:10px; margin-bottom:10px; background:#fafafa; }
+.message { padding:5px; margin-bottom:5px; border-bottom:1px solid #eee; }
+.message span { font-weight:bold; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>أوروم شات</h2>
+  <div id="chat"></div>
+  <input type="text" id="messageInput" placeholder="اكتب رسالتك هنا">
+  <button id="sendBtn">إرسال</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+import { getFirestore, collection, addDoc, query, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+// إعداد Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyAT979kaj6eBm1LG1H_gezbG6G17P-Gul4",
+  authDomain: "aurum-chat-1bc1c.firebaseapp.com",
+  projectId: "aurum-chat-1bc1c",
+  storageBucket: "aurum-chat-1bc1c.appspot.com",
+  messagingSenderId: "1067058426852",
+  appId: "1:1067058426852:web:268bd01b894a7b3eea4df1"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// العناصر
+const chatDiv = document.getElementById("chat");
+const messageInput = document.getElementById("messageInput");
+const sendBtn = document.getElementById("sendBtn");
+
+// إرسال رسالة
+sendBtn.addEventListener("click", async () => {
+  const msg = messageInput.value.trim();
+  if(msg === "") return;
+  try {
+    await addDoc(collection(db, "messages"), { 
+      email: "مستخدم مؤقت", 
+      text: msg, 
+      timestamp: Date.now() 
+    });
+    messageInput.value = "";
+  } catch(err) {
+    console.log("خطأ إرسال الرسالة:", err);
+  }
+});
+
+// عرض الرسائل
+function loadMessages() {
+  const q = query(collection(db, "messages"), orderBy("timestamp"));
+  onSnapshot(q, snapshot => {
+    chatDiv.innerHTML = "";
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const div = document.createElement("div");
+      div.classList.add("message");
+      div.innerHTML = `<span>${data.email}:</span> ${data.text}`;
+      chatDiv.appendChild(div);
+      chatDiv.scrollTop = chatDiv.scrollHeight;
+    });
+  });
+}
+
+// بدء تحميل الرسائل
+loadMessages();
+</script>
+</body>
+</html>
